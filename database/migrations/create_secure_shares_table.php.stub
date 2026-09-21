@@ -1,0 +1,33 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+use Ncpd\SecureShare\Enums\SecureShareStatus;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('secure_shares', function (Blueprint $table) {
+            $table->id();
+            $table->string('share_token', 64)->unique();
+            $table->longText('ciphertext')->nullable();
+            $table->boolean('has_attachments')->default(false);
+            $table->unsignedInteger('max_views')->nullable();
+            $table->unsignedInteger('view_count')->default(0);
+            $table->boolean('burn_after_reading')->default(false);
+            $table->timestamp('expires_at')->nullable();
+            $table->unsignedInteger('failed_attempts')->default(0);
+            $table->timestamp('locked_until')->nullable();
+            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->string('status', 32)->default(SecureShareStatus::Active->value);
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('secure_shares');
+    }
+};
