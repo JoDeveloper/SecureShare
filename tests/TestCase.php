@@ -3,6 +3,7 @@
 namespace Ncpd\SecureShare\Tests;
 
 use Ncpd\SecureShare\SecureShareServiceProvider;
+use Ncpd\SecureShare\Tests\Fixtures\AdminPanelProvider;
 use Ncpd\SecureShare\Tests\Fixtures\TestUser;
 use Orchestra\Testbench\TestCase as BaseTestCase;
 use Spatie\MediaLibrary\MediaLibraryServiceProvider;
@@ -12,8 +13,29 @@ abstract class TestCase extends BaseTestCase
     protected function getPackageProviders($app)
     {
         return [
+            // Full Filament runtime stack, in dependency order — the same set
+            // a host app gets automatically from composer package discovery.
+            \BladeUI\Icons\BladeIconsServiceProvider::class,
+            \BladeUI\Heroicons\BladeHeroiconsServiceProvider::class,
+            \Livewire\LivewireServiceProvider::class,
+            \Termwind\Laravel\TermwindServiceProvider::class,
+            \RyanChandler\BladeCaptureDirective\BladeCaptureDirectiveServiceProvider::class,
+            \Kirschbaum\PowerJoins\PowerJoinsServiceProvider::class,
+            \Filament\Support\SupportServiceProvider::class,
+            \Filament\Schemas\SchemasServiceProvider::class,
+            \Filament\Forms\FormsServiceProvider::class,
+            \Filament\Actions\ActionsServiceProvider::class,
+            \Filament\Notifications\NotificationsServiceProvider::class,
+            \Filament\Infolists\InfolistsServiceProvider::class,
+            \Filament\Tables\TablesServiceProvider::class,
+            \Filament\Widgets\WidgetsServiceProvider::class,
+            \Filament\QueryBuilder\QueryBuilderServiceProvider::class,
+            \Filament\FilamentServiceProvider::class,
+
+            // Under test
             SecureShareServiceProvider::class,
             MediaLibraryServiceProvider::class,
+            AdminPanelProvider::class,
         ];
     }
 
