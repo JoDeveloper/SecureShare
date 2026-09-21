@@ -5,6 +5,8 @@ namespace Ncpd\SecureShare;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Schedule;
+use Ncpd\SecureShare\Console\Commands\PurgeExpiredSharesCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 
@@ -18,7 +20,8 @@ final class SecureShareServiceProvider extends PackageServiceProvider
             ->hasMigration('create_secure_shares_table')
             ->hasRoute('web')
             ->hasViews()
-            ->hasTranslations();
+            ->hasTranslations()
+            ->hasCommand(PurgeExpiredSharesCommand::class);
     }
 
     public function packageBooted(): void
@@ -42,5 +45,9 @@ final class SecureShareServiceProvider extends PackageServiceProvider
                 ),
             ];
         });
+
+        if (config('secure-share.purge.schedule', true)) {
+            Schedule::command('secure-share:purge')->hourly();
+        }
     }
 }

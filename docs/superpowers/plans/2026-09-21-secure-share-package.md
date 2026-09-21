@@ -42,37 +42,37 @@
 
 **Files:** migration stub (id; share_token string(64) unique; ciphertext longText nullable; has_attachments bool default false; max_views unsignedInteger nullable; view_count unsignedInteger default 0; burn_after_reading bool default false; expires_at nullable; failed_attempts unsignedInteger default 0; locked_until nullable; created_by foreignId nullable constrained nullOnDelete; status string(32) default 'active'; timestamps), src/Enums/SecureShareStatus.php (string-backed: Active/Expired/Exhausted/Burned), src/Models/SecureShare.php (guarded=[], casts incl. `status => SecureShareStatus::class`, `InteractsWithMedia`, `registerMediaCollections` → `addMediaCollection('secure-attachments')`, no conversions, `creator()` belongsTo users model from config), exceptions class.
 
-- [ ] failing test (publish `secure-share-migrations` + `medialibrary-migrations` tags, `artisan migrate`, assert `Schema::hasColumns` incl. media table; assert model `->status` is enum instance) → implement → pass → commit.
+- [x] failing test (publish `secure-share-migrations` + `medialibrary-migrations` tags, `artisan migrate`, assert `Schema::hasColumns` incl. media table; assert model `->status` is enum instance) → implement → pass → commit.
 
 ### Task 3: SecretCipher (unit, pure TDD)
 
-- [ ] write `tests/Unit/SecretCipherTest.php` (roundtrip incl. unicode + large payload; wrong passcode throws DecryptionFailedException; flipped byte throws; truncated throws) → run, fail → paste spec implementation + length guard → run, pass → commit.
+- [x] write `tests/Unit/SecretCipherTest.php` (roundtrip incl. unicode + large payload; wrong passcode throws DecryptionFailedException; flipped byte throws; truncated throws) → run, fail → paste spec implementation + length guard → run, pass → commit.
 
 ### Task 4: CreateSecureShareAction
 
-- [ ] failing `tests/Feature/SecureShareActionsTest.php` (create with text + `UploadedFile::fake()` attachment → token 64 hex chars unique, ciphertext ≠ plaintext, media in `secure-attachments` with encrypted on-disk bytes ≠ plaintext and custom properties set, has_attachments true; disk config honored; passcode too short throws ValidationException; neither text nor files throws) → implement (model from `config('secure-share.model')`, `addMediaFromString(SecretCipher::encrypt($file->getContent(), $passcode))->usingFileName(bin2hex(random_bytes(16)).'.bin')->withCustomProperties([...])->toMediaCollection('secure-attachments', config('secure-share.disk'))`) → pass → commit.
+- [x] failing `tests/Feature/SecureShareActionsTest.php` (create with text + `UploadedFile::fake()` attachment → token 64 hex chars unique, ciphertext ≠ plaintext, media in `secure-attachments` with encrypted on-disk bytes ≠ plaintext and custom properties set, has_attachments true; disk config honored; passcode too short throws ValidationException; neither text nor files throws) → implement (model from `config('secure-share.model')`, `addMediaFromString(SecretCipher::encrypt($file->getContent(), $passcode))->usingFileName(bin2hex(random_bytes(16)).'.bin')->withCustomProperties([...])->toMediaCollection('secure-attachments', config('secure-share.disk'))`) → pass → commit.
 
 ### Task 5: UnlockSecureShareAction + DeleteSecureShareJob
 
-- [ ] failing tests (correct unlock returns plaintext; wrong passcode: throws generic + `failed_attempts` incremented; Nth failure sets `locked_until` + resets counter; locked share rejects even correct passcode; expired Active share flipped to Expired + rejected; max_views reached → status Exhausted + rejected; burn: dispatches job, sync-queue deletes row + media files) → implement (order: find → status → locked → expires → decrypt-catch → increment/lockout; success: reset counter, `view_count`++, burn → status Burned + `dispatch(new DeleteSecureShareJob($token))`, else exhaustion check; save) → pass → commit.
+- [x] failing tests (correct unlock returns plaintext; wrong passcode: throws generic + `failed_attempts` incremented; Nth failure sets `locked_until` + resets counter; locked share rejects even correct passcode; expired Active share flipped to Expired + rejected; max_views reached → status Exhausted + rejected; burn: dispatches job, sync-queue deletes row + media files) → implement (order: find → status → locked → expires → decrypt-catch → increment/lockout; success: reset counter, `view_count`++, burn → status Burned + `dispatch(new DeleteSecureShareJob($token))`, else exhaustion check; save) → pass → commit.
 
 ### Task 6: Routes + controller + limiter + public views + lang + flow tests
 
 **Files:** routes/web.php, controller, `RateLimiter::for('secure-share')` in provider boot (parse `config('secure-share.throttle')` "requests,minutes"; key = `share_token|ip`), resources/views/public/unlock.blade.php (standalone page, logical CSS properties = RTL-ready, Alpine via CDN defer but form works with JS off: states = passcode form / revealed (plaintext `<pre>` + copy + attachment list linking `secure-share.download` + meta) / generic error; `@csrf`), lang en + ar.
 
-- [ ] failing `tests/Feature/SecureShareFlowTest.php` (full flow GET form → POST reveal → download returns exact original bytes + `Content-Disposition` original filename; wrong-passcode flash message === unknown-token GET generic copy; burn-after-reading: reveal once then 404 + files gone; lockout after configured attempts; cross-share isolation — A's download w/ B's media uuid → 404; download without/expired session flag → redirect + generic error; assert DB row + media file + laravel.log never contain the passcode) → implement → pass → commit.
+- [x] failing `tests/Feature/SecureShareFlowTest.php` (full flow GET form → POST reveal → download returns exact original bytes + `Content-Disposition` original filename; wrong-passcode flash message === unknown-token GET generic copy; burn-after-reading: reveal once then 404 + files gone; lockout after configured attempts; cross-share isolation — A's download w/ B's media uuid → 404; download without/expired session flag → redirect + generic error; assert DB row + media file + laravel.log never contain the passcode) → implement → pass → commit.
 
 ### Task 7: Filament plugin + page
 
 **Files:** SecureSharePlugin (spec verbatim), src/Filament/Pages/CreateSecureShare.php (HasForms; form: passcode `password()->revealable()->minValue(config)->same('passcode_confirmation')` + confirmation, text Textarea nullable, `FileUpload::make('attachments')->multiple()->storeFiles(false)->maxSize(config max_upload_kb)`, burn Toggle, max_views numeric nullable, expiry Select 30m/1h/24h(default)/7d/30d/never → Carbon; `create()` validates text-or-files, calls the action with `auth()->id()`, stores created URL for result panel; Notification success), create-secure-share.blade.php (form + created-result section: URL + copy button + "share the passcode via a separate channel" warning), test panel fixture in TestCase (`AdminPanelProvider` registering the plugin, base path `/admin`).
 
-- [ ] failing `tests/Feature/FilamentPageTest.php` (authed `Livewire::test(CreateSecureShare::class)->fillForm(...)->callAction('create')` → share exists in DB; unauthenticated GET redirects to login; render shows form fields) → implement → pass → commit.
+- [x] failing `tests/Feature/FilamentPageTest.php` (authed `Livewire::test(CreateSecureShare::class)->fillForm(...)->callAction('create')` → share exists in DB; unauthenticated GET redirects to login; render shows form fields) → implement → pass → commit.
 
 ### Task 8: Purge command + schedule + README + full verification
 
 **Files:** PurgeExpiredSharesCommand (`secure-share:purge`: Active+expired_at<now → Expired; Active+view_count≥max_views → Exhausted; delete Burned now; delete Expired/Exhausted older than `purge.retention_days` + their media; output counts), `->hasCommand()` + `Schedule::command('secure-share:purge')->hourly()` gated on `purge.schedule` in provider, README (install: composer → publish config+migrations → migrate → `->plugin(SecureSharePlugin::make())` in panel; scheduling note if disabled; config reference; security model incl. known tradeoffs: Livewire temp-upload staging and cleartext attachment metadata (original filenames) in media table per spec).
 
-- [ ] failing PurgeCommandTest (artisan exits 0, statuses flipped, retention deletion removes media files) → implement → pass → **full gate:** `composer validate` + `vendor/bin/phpunit` all green → commit "feat: complete secure-share package".
+- [x] failing PurgeCommandTest (artisan exits 0, statuses flipped, retention deletion removes media files) → implement → pass → **full gate:** `composer validate` + `vendor/bin/phpunit` all green → commit "feat: complete secure-share package".
 
 ## Self-Review Notes
 
