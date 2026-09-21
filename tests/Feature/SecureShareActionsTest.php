@@ -136,7 +136,7 @@ class SecureShareActionsTest extends TestCase
     }
 
     #[Test]
-    public function allows_attachment_only_share_with_null_ciphertext(): void
+    public function allows_attachment_only_share_with_verification_ciphertext(): void
     {
         $file = UploadedFile::fake()->createWithContent('only-file.bin', 'BYTES');
 
@@ -145,7 +145,10 @@ class SecureShareActionsTest extends TestCase
             attachments: [$file],
         );
 
-        $this->assertNull($share->ciphertext);
+        // A ciphertext is ALWAYS stored — even for attachment-only shares — so
+        // the passcode remains verifiable at unlock time.
+        $this->assertNotNull($share->ciphertext);
+        $this->assertSame('', SecretCipher::decrypt($share->ciphertext, self::PASSCODE));
         $this->assertTrue($share->has_attachments);
         $this->assertCount(1, $share->getMedia('secure-attachments'));
     }

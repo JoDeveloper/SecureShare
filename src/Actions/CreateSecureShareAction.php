@@ -55,7 +55,10 @@ final class CreateSecureShareAction
         /** @var SecureShare $share */
         $share = $model::create([
             'share_token' => bin2hex(random_bytes(32)),
-            'ciphertext' => filled($text) ? SecretCipher::encrypt($text, $passcode) : null,
+            // Always encrypted — even for attachment-only shares — so the
+            // passcode stays verifiable at unlock time (empty body decrypts
+            // to an empty string).
+            'ciphertext' => SecretCipher::encrypt($text ?? '', $passcode),
             'has_attachments' => count($attachments) > 0,
             'max_views' => $options['max_views'] ?? null,
             'burn_after_reading' => (bool) ($options['burn_after_reading'] ?? false),
