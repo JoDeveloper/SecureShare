@@ -17,58 +17,102 @@ final class UnlockSecureShareAction
      * @return array{share: SecureShare, plaintext: ?string}
      *
      * @throws ShareUnlockException on every failure mode, always with the
-     *         identical generic message.
+     *                              identical generic message.
      */
     public function execute(string $shareToken, string $passcode): array
     {
         /** @var class-string<SecureShare> $model */
         $model = config('secure-share.model');
 
-        $share = $model::query()->where('share_token', $shareToken)->first();
+        $connection = (new $model)->getConnection();
 
-        if (! $share instanceof SecureShare || $share->status !== SecureShareStatus::Active) {
-            throw ShareUnlockException::generic();
-        }
+        $result = $connection->transaction(function () use ($model, $shareToken, $passcode): array {
+            if (mb_strlen($passcode, 'UTF-8') > 1024) {
+                return ['failed' => true];
+            }
 
-        if ($share->locked_until !== null && $share->locked_until->isFuture()) {
-            throw ShareUnlockException::generic();
-        }
+            /** @var SecureShare|null $share */
+            $share = $model::query()
+                ->where('share_token', $shareToken)
+                ->lockForUpdate()
+                ->first();
 
-        if ($share->expires_at !== null && $share->expires_at->isPast()) {
-            $share->status = SecureShareStatus::Expired;
-            $share->save();
+            if (! $share instanceof SecureShare || $share->status !== SecureShareStatus::Active) {
+                return ['failed' => true];
+            }
 
-            throw ShareUnlockException::generic();
-        }
+            $now = now();
 
-        try {
-            $plaintext = $share->ciphertext !== null
-                ? SecretCipher::decrypt($share->ciphertext, $passcode)
-                : null;
-        } catch (DecryptionFailedException) {
-            $this->registerFailedAttempt($share);
+            if ($share->locked_until !== null && $share->locked_until->isFuture()) {
+                return ['failed' => true];
+            }
 
-            throw ShareUnlockException::generic();
-        }
+            if ($share->expires_at !== null && $now->greaterThanOrEqualTo($share->expires_at)) {
+                $share->status = SecureShareStatus::Expired;
+                $share->save();
 
-        $share->failed_attempts = 0;
-        $share->view_count += 1;
+                return ['failed' => true];
+            }
 
-        if ($share->burn_after_reading) {
-            $share->status = SecureShareStatus::Burned;
-            $share->save();
-
-            // Queued, so the reveal response is sent before deletion starts.
-            DeleteSecureShareJob::dispatch($share->share_token);
-        } else {
             if ($share->max_views !== null && $share->view_count >= $share->max_views) {
+                $share->status = SecureShareStatus::Exhausted;
+                $share->save();
+
+                return ['failed' => true];
+            }
+
+            if ($share->ciphertext === null) {
+                return ['failed' => true];
+            }
+
+            try {
+                $plaintext = SecretCipher::decrypt($share->ciphertext, $passcode);
+            } catch (DecryptionFailedException) {
+                $this->registerFailedAttempt($share);
+
+                return ['failed' => true];
+            }
+
+            $share->failed_attempts = 0;
+            $share->view_count = (int) $share->view_count + 1;
+
+            if ($share->has_attachments) {
+                $share->download_until = $now->copy()->addSeconds(
+                    (int) config('secure-share.unlock_ttl', 600)
+                );
+            }
+
+            $deleteImmediately = false;
+
+            if ($share->burn_after_reading) {
+                $share->status = SecureShareStatus::Burned;
+                $deleteImmediately = ! $share->has_attachments;
+            } elseif ($share->max_views !== null && $share->view_count >= $share->max_views) {
                 $share->status = SecureShareStatus::Exhausted;
             }
 
             $share->save();
+
+            return [
+                'failed' => false,
+                'share' => $share,
+                'plaintext' => $plaintext,
+                'delete_immediately' => $deleteImmediately,
+            ];
+        });
+
+        if ($result['failed']) {
+            throw ShareUnlockException::generic();
         }
 
-        return ['share' => $share, 'plaintext' => $plaintext];
+        if ($result['delete_immediately']) {
+            DeleteSecureShareJob::dispatch($result['share']->share_token);
+        }
+
+        return [
+            'share' => $result['share'],
+            'plaintext' => $result['plaintext'],
+        ];
     }
 
     private function registerFailedAttempt(SecureShare $share): void

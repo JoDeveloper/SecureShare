@@ -5,6 +5,7 @@ namespace Ncpd\SecureShare\Tests\Feature;
 use Illuminate\Support\Facades\Schema;
 use Ncpd\SecureShare\Enums\SecureShareStatus;
 use Ncpd\SecureShare\Models\SecureShare;
+use Ncpd\SecureShare\Tests\Fixtures\TestUser;
 use Ncpd\SecureShare\Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 
@@ -19,7 +20,7 @@ class SecureShareModelTest extends TestCase
         $columns = [
             'id', 'share_token', 'ciphertext', 'has_attachments', 'max_views',
             'view_count', 'burn_after_reading', 'expires_at', 'failed_attempts',
-            'locked_until', 'created_by', 'status', 'created_at', 'updated_at',
+            'download_until', 'locked_until', 'created_by', 'status', 'created_at', 'updated_at',
         ];
 
         foreach ($columns as $column) {
@@ -41,13 +42,14 @@ class SecureShareModelTest extends TestCase
         $this->assertFalse($share->has_attachments);
         $this->assertFalse($share->burn_after_reading);
         $this->assertNull($share->expires_at);
+        $this->assertNull($share->download_until);
         $this->assertNull($share->max_views);
     }
 
     #[Test]
     public function creator_relation_resolves_the_configured_user_model(): void
     {
-        $user = \Ncpd\SecureShare\Tests\Fixtures\TestUser::create([
+        $user = TestUser::create([
             'name' => 'Joe',
             'email' => 'joe@example.com',
             'password' => 'secret-hash',

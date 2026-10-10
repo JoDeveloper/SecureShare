@@ -2,6 +2,7 @@
 
 namespace Ncpd\SecureShare\Tests\Feature;
 
+use Carbon\Carbon;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -83,6 +84,32 @@ class PurgeCommandTest extends TestCase
         // Past retention: share + files gone.
         $this->assertNull(SecureShare::find($old->id));
         Storage::disk('test')->assertMissing($oldMediaPath);
+    }
+
+    #[Test]
+    public function keeps_an_exhausted_share_until_its_attachment_download_window_closes(): void
+    {
+        $file = UploadedFile::fake()->createWithContent('final.txt', 'FINAL');
+        $share = $this->makeShare(['max_views' => 1], [$file]);
+        $mediaPath = $share->getMedia('secure-attachments')->first()->getPathRelativeToRoot();
+        $downloadUntil = now()->addSeconds((int) config('secure-share.unlock_ttl'));
+
+        DB::table('secure_shares')->where('id', $share->id)->update([
+            'status' => SecureShareStatus::Exhausted->value,
+            'download_until' => $downloadUntil,
+            'updated_at' => now()->subDays((int) config('secure-share.purge.retention_days') + 1),
+        ]);
+
+        $this->artisan('secure-share:purge')->assertExitCode(0);
+        $this->assertNotNull(SecureShare::find($share->id));
+        Storage::disk('test')->assertExists($mediaPath);
+
+        Carbon::setTestNow($downloadUntil->copy()->addSecond());
+        $this->artisan('secure-share:purge')->assertExitCode(0);
+        Carbon::setTestNow();
+
+        $this->assertNull(SecureShare::find($share->id));
+        Storage::disk('test')->assertMissing($mediaPath);
     }
 
     #[Test]

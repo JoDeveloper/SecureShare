@@ -24,6 +24,13 @@
             "Ncpd\\SecureShare\\Tests\\": "tests/"
         }
     },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Ncpd\\SecureShare\\SecureShareServiceProvider"
+            ]
+        }
+    },
     "scripts": {
         "test": "phpunit"
     },

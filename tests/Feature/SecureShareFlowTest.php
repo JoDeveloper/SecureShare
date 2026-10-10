@@ -2,10 +2,13 @@
 
 namespace Ncpd\SecureShare\Tests\Feature;
 
+use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 use Ncpd\SecureShare\Actions\CreateSecureShareAction;
+use Ncpd\SecureShare\Enums\SecureShareStatus;
 use Ncpd\SecureShare\Models\SecureShare;
 use Ncpd\SecureShare\Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
@@ -66,6 +69,11 @@ class SecureShareFlowTest extends TestCase
         $reveal->assertSee($media->uuid, false);
         $reveal->assertSee('invoice.txt', false);
 
+        $grant = session('secure-share.unlocked.'.$share->share_token);
+        $this->assertIsArray($grant);
+        $this->assertNotSame(self::PASSCODE, $grant['pc']);
+        $this->assertSame(self::PASSCODE, Crypt::decryptString($grant['pc']));
+
         // 3. The download streams the exact original bytes under the original name.
         $download = $this->get("/secure-share/{$share->share_token}/download/{$media->uuid}");
         $download->assertOk();
@@ -75,6 +83,61 @@ class SecureShareFlowTest extends TestCase
             $download->headers->get('Content-Disposition')
         );
         $this->assertSame('nosniff', $download->headers->get('X-Content-Type-Options'));
+        $this->assertStringContainsString('no-store', (string) $download->headers->get('Cache-Control'));
+    }
+
+    #[Test]
+    public function unlock_rejects_a_share_at_its_exact_expiry_timestamp(): void
+    {
+        $share = $this->makeShare(['expires_at' => now()->addMinute()]);
+        $expiresAt = $share->refresh()->expires_at;
+
+        Carbon::setTestNow($expiresAt);
+        $response = $this->post("/secure-share/{$share->share_token}", ['passcode' => self::PASSCODE]);
+        Carbon::setTestNow();
+
+        $response
+            ->assertRedirect("/secure-share/{$share->share_token}")
+            ->assertSessionHas('error', __('secure-share::messages.unavailable'));
+        $this->assertSame(SecureShareStatus::Expired, $share->refresh()->status);
+    }
+
+    #[Test]
+    public function download_rejects_a_live_grant_at_its_exact_expiry_timestamp(): void
+    {
+        $file = UploadedFile::fake()->createWithContent('grant.txt', 'GRANT');
+        $share = $this->makeShare([], [$file]);
+        $media = $share->getMedia('secure-attachments')->first();
+
+        $this->post("/secure-share/{$share->share_token}", ['passcode' => self::PASSCODE])->assertOk();
+        $downloadUntil = $share->refresh()->download_until;
+
+        Carbon::setTestNow($downloadUntil);
+        $response = $this->get("/secure-share/{$share->share_token}/download/{$media->uuid}");
+        Carbon::setTestNow();
+
+        $response
+            ->assertRedirect("/secure-share/{$share->share_token}")
+            ->assertSessionHas('error', __('secure-share::messages.unavailable'));
+    }
+
+    #[Test]
+    public function download_rejects_a_live_grant_when_the_share_expires_at_the_boundary(): void
+    {
+        $file = UploadedFile::fake()->createWithContent('expiry.txt', 'EXPIRY');
+        $share = $this->makeShare(['expires_at' => now()->addMinute()], [$file]);
+        $media = $share->getMedia('secure-attachments')->first();
+
+        $this->post("/secure-share/{$share->share_token}", ['passcode' => self::PASSCODE])->assertOk();
+        $expiresAt = $share->refresh()->expires_at;
+
+        Carbon::setTestNow($expiresAt);
+        $response = $this->get("/secure-share/{$share->share_token}/download/{$media->uuid}");
+        Carbon::setTestNow();
+
+        $response
+            ->assertRedirect("/secure-share/{$share->share_token}")
+            ->assertSessionHas('error', __('secure-share::messages.unavailable'));
     }
 
     #[Test]
@@ -125,7 +188,7 @@ class SecureShareFlowTest extends TestCase
     }
 
     #[Test]
-    public function burn_after_reading_reveal_once_then_link_is_dead(): void
+    public function burn_after_reading_reveal_once_then_allows_first_attachment_download(): void
     {
         $file = UploadedFile::fake()->createWithContent('evidence.txt', 'EVIDENCE BYTES');
         $share = $this->makeShare(['burn_after_reading' => true], [$file]);
@@ -138,8 +201,16 @@ class SecureShareFlowTest extends TestCase
         $reveal->assertOk();
         $reveal->assertSee('the secret body', false);
 
-        $this->assertNull(SecureShare::find($share->id));
-        Storage::disk('test')->assertMissing($relativePath);
+        $this->assertSame(SecureShareStatus::Burned, $share->refresh()->status);
+        Storage::disk('test')->assertExists($relativePath);
+
+        $this->get("/secure-share/{$share->share_token}/download/{$media->uuid}")
+            ->assertOk()
+            ->assertStreamedContent('EVIDENCE BYTES');
+
+        $this->post("/secure-share/{$share->share_token}", ['passcode' => self::PASSCODE])
+            ->assertRedirect()
+            ->assertSessionHas('error', __('secure-share::messages.unavailable'));
 
         $this->get("/secure-share/{$share->share_token}")->assertNotFound();
     }

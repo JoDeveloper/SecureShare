@@ -2,12 +2,14 @@
 
 namespace Ncpd\SecureShare\Tests\Feature;
 
+use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Ncpd\SecureShare\Actions\CreateSecureShareAction;
 use Ncpd\SecureShare\Actions\UnlockSecureShareAction;
 use Ncpd\SecureShare\Enums\SecureShareStatus;
 use Ncpd\SecureShare\Exceptions\ShareUnlockException;
+use Ncpd\SecureShare\Jobs\DeleteSecureShareJob;
 use Ncpd\SecureShare\Models\SecureShare;
 use Ncpd\SecureShare\Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
@@ -71,6 +73,36 @@ class SecureShareUnlockTest extends TestCase
     }
 
     #[Test]
+    public function direct_unlock_rejects_overlong_passcodes_without_consuming_attempts(): void
+    {
+        $share = $this->createShare();
+
+        try {
+            app(UnlockSecureShareAction::class)->execute($share->share_token, str_repeat('x', 1025));
+            $this->fail('ShareUnlockException was not thrown');
+        } catch (ShareUnlockException) {
+        }
+
+        $this->assertSame(0, $share->refresh()->failed_attempts);
+        $this->assertSame(0, $share->view_count);
+    }
+
+    #[Test]
+    public function direct_unlock_accepts_a_valid_long_unicode_passcode(): void
+    {
+        $passcode = str_repeat('س', 600);
+        $share = app(CreateSecureShareAction::class)->execute(
+            passcode: $passcode,
+            text: 'unicode secret',
+        );
+
+        $result = app(UnlockSecureShareAction::class)->execute($share->share_token, $passcode);
+
+        $this->assertSame('unicode secret', $result['plaintext']);
+        $this->assertSame(1, $share->refresh()->view_count);
+    }
+
+    #[Test]
     public function lockout_engages_after_configured_attempts_and_rejects_correct_passcode(): void
     {
         $share = $this->createShare();
@@ -106,12 +138,12 @@ class SecureShareUnlockTest extends TestCase
             }
         }
 
-        \Carbon\Carbon::setTestNow(now()->addMinutes(16));
+        Carbon::setTestNow(now()->addMinutes(16));
 
         $result = $action->execute($share->share_token, self::PASSCODE);
         $this->assertSame('the secret body', $result['plaintext']);
 
-        \Carbon\Carbon::setTestNow();
+        Carbon::setTestNow();
     }
 
     #[Test]
@@ -148,7 +180,7 @@ class SecureShareUnlockTest extends TestCase
     }
 
     #[Test]
-    public function burn_after_reading_deletes_share_and_media_files(): void
+    public function burn_after_reading_keeps_attachment_until_download_window_closes(): void
     {
         $file = UploadedFile::fake()->createWithContent('evidence.txt', 'EVIDENCE BYTES');
 
@@ -163,12 +195,21 @@ class SecureShareUnlockTest extends TestCase
         $relativePath = $media->getPathRelativeToRoot();
         Storage::disk('test')->assertExists($relativePath);
 
-        // Sync queue connection in tests: the delete job runs inline.
         $result = app(UnlockSecureShareAction::class)->execute($share->share_token, self::PASSCODE);
 
         $this->assertSame('gone in a flash', $result['plaintext']);
-        $this->assertNull(SecureShare::find($share->id), 'Burned share must be deleted');
-        Storage::disk('test')->assertMissing($relativePath, 'Media files must be deleted too');
+        $this->assertSame(SecureShareStatus::Burned, $share->refresh()->status);
+        Storage::disk('test')->assertExists($relativePath);
+
+        (new DeleteSecureShareJob($share->share_token))->handle();
+        $this->assertNotNull(SecureShare::find($share->id));
+
+        Carbon::setTestNow(now()->addSeconds((int) config('secure-share.unlock_ttl') + 1));
+        (new DeleteSecureShareJob($share->share_token))->handle();
+        Carbon::setTestNow();
+
+        $this->assertNull(SecureShare::find($share->id), 'Burned share must be deleted after its download window');
+        Storage::disk('test')->assertMissing($relativePath);
     }
 
     #[Test]

@@ -25,6 +25,13 @@ php artisan vendor:publish --tag="secure-share-migrations"
 php artisan migrate
 ```
 
+The service provider is registered through Composer package discovery. Publish
+the migrations again when upgrading to a release that adds one, then run
+`php artisan migrate` before using the new behavior.
+
+After upgrading from a release with the older unlock-session format, recipients
+must unlock shares again. Run the published migration before serving requests.
+
 Register the plugin once in your panel provider:
 
 ```php
@@ -47,7 +54,8 @@ That's it. Your panel gets a **Secure shares** page, and the public
    plus a passcode on the **Create secure share** page.
 2. The body and every attachment are encrypted with a key derived from the
    passcode via `sodium_crypto_pwhash` (Argon2id) + `sodium_crypto_secretbox`.
-   The passcode itself is never stored anywhere.
+   The raw passcode is never written to the database, logs, or client; a
+   successful unlock stores an encrypted copy in the server-side session grant.
 3. Attachment ciphertext is stored through Media Library in the
    `secure-attachments` collection on `config('secure-share.disk')`
    (`null` = Media Library's default disk, e.g. your OSS disk).
@@ -55,8 +63,9 @@ That's it. Your panel gets a **Secure shares** page, and the public
    the decrypted text plus download links. Downloads stream decrypted bytes
    and never write plaintext to disk.
 5. Optional limits: expiry (30 min – 30 days / never), max views, and
-   burn-after-reading (the share — row and files — is deleted by a queued job
-   immediately after the first successful unlock).
+   burn-after-reading. A burned share rejects later unlocks immediately; its
+   attachment download grant remains available for the configured short window
+   and cleanup runs afterward.
 
 ## Scheduling
 
@@ -64,9 +73,12 @@ The package auto-schedules `secure-share:purge` **hourly**. The command:
 
 - marks `Active` shares past `expires_at` as `Expired`, and past `max_views`
   as `Exhausted`,
-- deletes `Burned` shares (belt-and-braces for the queued delete job),
-- deletes `Expired`/`Exhausted` shares — and their media files — once they are
-  older than `purge.retention_days` (default 7 days).
+- retries cleanup for `Burned` shares after the download grant window,
+- runs cleanup itself through the model's `erase()` path for eligible
+  expired/exhausted ciphertext and encrypted media; queued cleanup is
+  supplementary. Soft-deleted metadata remains available for audit and retry.
+  `purge.retention_days` (default 7 days) controls cleanup eligibility, not
+  metadata retention.
 
 If you prefer your own schedule, set `'purge' => ['schedule' => false]` and
 register it yourself, e.g. `Schedule::command('secure-share:purge')->hourly();`.
@@ -87,9 +99,9 @@ Published at `config/secure-share.php`:
 | `lockout.lockout_minutes` | `15` | Lockout duration |
 | `throttle` | `'6,1'` | `requests,minutes` on unlock + download, keyed by token **and** IP |
 | `unlock_ttl` | `600` | Seconds a successful unlock keeps downloads working |
-| `max_upload_kb` | `10240` | Max size per attachment (Filament upload cap) |
+| `max_upload_kb` | `10240` | Max size per attachment enforced by the create action and Filament UI |
 | `purge.schedule` | `true` | Auto-schedule the hourly purge |
-| `purge.retention_days` | `7` | How long expired/exhausted shares linger before deletion |
+| `purge.retention_days` | `7` | How long expired/exhausted ciphertext waits before cleanup is eligible |
 
 ## Views & translations
 
@@ -105,6 +117,46 @@ Translations ship in English and Arabic; the public page mirrors correctly in
 RTL locales (logical CSS properties) and degrades gracefully without
 JavaScript. Add locales by publishing translations.
 
+## Reusable Filament action
+
+Use the native Filament action anywhere a host resolves its source files. The
+attachment resolver is trusted server-side code; it receives validated action
+data and the current record. Each descriptor must provide a configured disk,
+path, and download name, with an optional MIME type:
+
+```php
+use App\Models\Template;
+use Filament\Facades\Filament;
+use Filament\Forms\Components\Select;
+use Ncpd\SecureShare\Filament\Actions\SecureShareAction;
+use Ncpd\SecureShare\Filament\Schemas\SecureShareForm;
+
+SecureShareAction::make()
+    // Define TemplatePolicy::share() to enforce record visibility and sharing rights.
+    ->authorize(fn (Template $record): bool => Filament::auth()->user()?->can('share', $record) ?? false)
+    ->attachments(fn (array $data, Template $record): array => [[
+        'disk' => config('filament.default_filesystem_disk'),
+        'path' => $record->templateFiles()->findOrFail($data['version_id'])->file_path,
+        'name' => 'template.docx',
+        'mime' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    ]]);
+```
+
+When the resolver supplies the content, add host selectors and reuse the
+package controls without the text/upload inputs:
+
+```php
+->schema([
+    Select::make('version_id')->required(),
+    ...SecureShareForm::components(withContent: false),
+])
+```
+
+The action uses the active Filament guard for `created_by`, validates the
+passcode and limits, and shows a persistent notification containing the URL.
+The descriptor path is read from the configured disk by trusted server-side
+code; do not accept paths or URLs from request data.
+
 ## Security model
 
 **What is protected**
@@ -112,10 +164,11 @@ JavaScript. Add locales by publishing translations.
 - Secret text and attachment *contents* are encrypted with the passcode
   before they touch the database or object storage. A full dump of DB + files
   yields only ciphertext.
-- The passcode is never written to the database, logs, or cache.
+- The raw passcode is never written to the database, logs, or client. After a
+  successful unlock, an encrypted copy is held in the server-side session.
 - Every unlock failure mode — unknown token, wrong passcode, expired,
-  exhausted, locked — returns the **identical** generic message, so responses
-  are not an oracle.
+  exhausted, locked — uses the **identical** generic error message. Random,
+  high-entropy tokens remain the primary protection against guessing.
 - Lockout (5 attempts → 15 minutes) plus per-token-and-IP rate limiting on
   the unlock and download routes.
 - Downloads are isolated per share: a media UUID from share B cannot be
@@ -126,13 +179,12 @@ JavaScript. Add locales by publishing translations.
 
 **Known trade-offs (read before deploying)**
 
-1. **Transient passcode in the server-side session.** The spec requires a
-   separate streaming download route *and* forbids persisting the passcode —
-   two requirements that cannot both hold in PHP's request model. After a
-   successful unlock, the passcode is kept in the server-side session for
-   `unlock_ttl` seconds (default 10 minutes) solely so downloads can decrypt;
-   it is forgotten on expiry and never reaches the client. Treat the session
-   store with the same care as the database.
+1. **Unlock grant trust boundary.** `Crypt::encryptString()` uses the
+   application's `APP_KEY` to wrap the passcode inside a server-side session
+   grant. The grant TTL authorizes downloads for `unlock_ttl` seconds (default
+   10 minutes), while the encrypted value can remain dormant until the session
+   expires or it is cleared. Protect `APP_KEY` and the session store as
+   carefully as the database; the raw passcode is never returned to the browser.
 2. **Livewire temp-upload staging.** While an admin picks files in the Filament
    form, Livewire stages the plaintext upload on its temporary disk before the
    form is submitted and the bytes are encrypted. This is inherent to Livewire
@@ -141,12 +193,19 @@ JavaScript. Add locales by publishing translations.
    sizes live unencrypted in the `media` table (`custom_properties`) so
    downloads can restore them. If filenames are sensitive in your threat
    model, rename files before attaching.
-4. **Whole-file decrypt in memory.** Downloads decrypt the attachment in
-   memory (capped by `max_upload_kb`). Very large attachments increase peak
-   memory per download.
-5. **View counting is not atomic.** Concurrent unlocks of the same share can
-   race `view_count`. For typical use this is cosmetic; treat `max_views` as
-   approximate under adversarial concurrency.
+4. **Creation cap vs download memory.** Creation reads are capped by
+   `max_upload_kb` before encryption. Downloads currently decrypt the whole
+   attachment in memory, so large permitted files increase peak memory; use a
+   dedicated streaming storage service if that becomes material.
+5. **Atomic limits.** Unlock limits are serialized per share so max views and
+   lockout counters cannot be consumed twice by the same row. Production
+   concurrency on every supported database and storage driver still requires
+   deployment-environment verification.
+
+6. **Soft-delete retention.** Cleanup erases ciphertext and encrypted media
+   through the model's `erase()` path while soft-deleted metadata remains
+   available for audit and retry. Configure database metadata retention and
+   object-storage lifecycle policies together.
 
 ## Testing
 

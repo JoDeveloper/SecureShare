@@ -7,21 +7,32 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Ncpd\SecureShare\Enums\SecureShareStatus;
+use Ncpd\SecureShare\Models\SecureShare;
 
 final class DeleteSecureShareJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public function __construct(public readonly string $shareToken)
-    {
-    }
+    public function __construct(public readonly string $shareToken) {}
 
     public function handle(): void
     {
-        /** @var class-string<\Ncpd\SecureShare\Models\SecureShare> $model */
+        /** @var class-string<SecureShare> $model */
         $model = config('secure-share.model');
 
-        // Deleting the model cascades to its media records and files.
-        $model::query()->where('share_token', $this->shareToken)->first()?->delete();
+        $share = $model::query()->where('share_token', $this->shareToken)->first();
+
+        if ($share === null || $share->status !== SecureShareStatus::Burned) {
+            return;
+        }
+
+        if ($share->has_attachments
+            && $share->download_until !== null
+            && now()->lessThan($share->download_until)) {
+            return;
+        }
+
+        $share->erase();
     }
 }

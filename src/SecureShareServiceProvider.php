@@ -17,7 +17,10 @@ final class SecureShareServiceProvider extends PackageServiceProvider
         $package
             ->name('secure-share')
             ->hasConfigFile()
-            ->hasMigration('create_secure_shares_table')
+            ->hasMigrations([
+                'create_secure_shares_table',
+                'add_download_until_to_secure_shares_table',
+            ])
             ->hasRoute('web')
             ->hasViews()
             ->hasTranslations()

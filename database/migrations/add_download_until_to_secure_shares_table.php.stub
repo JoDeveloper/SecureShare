@@ -1,0 +1,40 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        if (! Schema::hasColumn('secure_shares', 'download_until')) {
+            Schema::table('secure_shares', function (Blueprint $table): void {
+                $table->timestamp('download_until')->nullable()->after('expires_at');
+            });
+        }
+
+        if (! Schema::hasColumn('secure_shares', 'deleted_at')) {
+            Schema::table('secure_shares', function (Blueprint $table): void {
+                $table->softDeletes();
+            });
+        }
+    }
+
+    public function down(): void
+    {
+        $columns = [];
+
+        foreach (['download_until', 'deleted_at'] as $column) {
+            if (Schema::hasColumn('secure_shares', $column)) {
+                $columns[] = $column;
+            }
+        }
+
+        if ($columns !== []) {
+            Schema::table('secure_shares', function (Blueprint $table) use ($columns): void {
+                $table->dropColumn($columns);
+            });
+        }
+    }
+};
