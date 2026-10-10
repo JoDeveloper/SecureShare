@@ -1,6 +1,6 @@
 <?php
 
-namespace Ncpd\SecureShare\Filament\Schemas;
+namespace Jodeveloper\SecureShare\Filament\Schemas;
 
 use Carbon\CarbonInterface;
 use Filament\Forms\Components\FileUpload;

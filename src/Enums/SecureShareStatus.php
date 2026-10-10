@@ -1,6 +1,6 @@
 <?php
 
-namespace Ncpd\SecureShare\Enums;
+namespace Jodeveloper\SecureShare\Enums;
 
 enum SecureShareStatus: string
 {

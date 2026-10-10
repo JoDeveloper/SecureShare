@@ -1,7 +1,7 @@
 <?php
 
-namespace Ncpd\SecureShare\Tests\Fixtures;
+namespace Jodeveloper\SecureShare\Tests\Fixtures;
 
-use Ncpd\SecureShare\Models\SecureShare;
+use Jodeveloper\SecureShare\Models\SecureShare;
 
 class CustomSecureShare extends SecureShare {}

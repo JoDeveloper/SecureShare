@@ -1,12 +1,12 @@
 <?php
 
-namespace Ncpd\SecureShare\Tests\Feature;
+namespace Jodeveloper\SecureShare\Tests\Feature;
 
 use Illuminate\Support\Facades\Schema;
-use Ncpd\SecureShare\Enums\SecureShareStatus;
-use Ncpd\SecureShare\Models\SecureShare;
-use Ncpd\SecureShare\Tests\Fixtures\TestUser;
-use Ncpd\SecureShare\Tests\TestCase;
+use Jodeveloper\SecureShare\Enums\SecureShareStatus;
+use Jodeveloper\SecureShare\Models\SecureShare;
+use Jodeveloper\SecureShare\Tests\Fixtures\TestUser;
+use Jodeveloper\SecureShare\Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 
 class SecureShareModelTest extends TestCase

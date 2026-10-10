@@ -1,15 +1,15 @@
 <?php
 
-namespace Ncpd\SecureShare\Actions;
+namespace Jodeveloper\SecureShare\Actions;
 
 use Carbon\CarbonInterface;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
-use Ncpd\SecureShare\Enums\SecureShareStatus;
-use Ncpd\SecureShare\Models\SecureShare;
-use Ncpd\SecureShare\Services\SecretCipher;
+use Jodeveloper\SecureShare\Enums\SecureShareStatus;
+use Jodeveloper\SecureShare\Models\SecureShare;
+use Jodeveloper\SecureShare\Services\SecretCipher;
 use Spatie\MediaLibrary\MediaCollections\Events\MediaHasBeenAddedEvent;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Throwable;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Ncpd\SecureShare\Tests\Fixtures;
+namespace Jodeveloper\SecureShare\Tests\Fixtures;
 
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -14,7 +14,7 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
-use Ncpd\SecureShare\SecureSharePlugin;
+use Jodeveloper\SecureShare\SecureSharePlugin;
 
 class AdminPanelProvider extends PanelProvider
 {

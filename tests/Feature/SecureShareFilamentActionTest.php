@@ -1,16 +1,16 @@
 <?php
 
-namespace Ncpd\SecureShare\Tests\Feature;
+namespace Jodeveloper\SecureShare\Tests\Feature;
 
 use Filament\Facades\Filament;
 use Illuminate\Validation\ValidationException;
 use Livewire\Livewire;
-use Ncpd\SecureShare\Filament\Schemas\SecureShareForm;
-use Ncpd\SecureShare\Models\SecureShare;
-use Ncpd\SecureShare\Services\SecretCipher;
-use Ncpd\SecureShare\Tests\Fixtures\SecureShareActionPage;
-use Ncpd\SecureShare\Tests\Fixtures\TestUser;
-use Ncpd\SecureShare\Tests\TestCase;
+use Jodeveloper\SecureShare\Filament\Schemas\SecureShareForm;
+use Jodeveloper\SecureShare\Models\SecureShare;
+use Jodeveloper\SecureShare\Services\SecretCipher;
+use Jodeveloper\SecureShare\Tests\Fixtures\SecureShareActionPage;
+use Jodeveloper\SecureShare\Tests\Fixtures\TestUser;
+use Jodeveloper\SecureShare\Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 
 class SecureShareFilamentActionTest extends TestCase

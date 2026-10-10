@@ -1,4 +1,4 @@
-# ncpd/secure-share
+# jodeveloper/secure-share
 
 Passcode-encrypted secret + attachment sharing for Laravel + Filament.
 
@@ -18,7 +18,7 @@ Media Library disk (OSS, S3, local) the host already has configured.
 ## Installation
 
 ```bash
-composer require ncpd/secure-share
+composer require jodeveloper/secure-share
 
 php artisan vendor:publish --tag="secure-share-config"
 php artisan vendor:publish --tag="secure-share-migrations"
@@ -35,7 +35,7 @@ must unlock shares again. Run the published migration before serving requests.
 Register the plugin once in your panel provider:
 
 ```php
-use Ncpd\SecureShare\SecureSharePlugin;
+use Jodeveloper\SecureShare\SecureSharePlugin;
 
 public function panel(Panel $panel): Panel
 {
@@ -128,8 +128,8 @@ path, and download name, with an optional MIME type:
 use App\Models\Template;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\Select;
-use Ncpd\SecureShare\Filament\Actions\SecureShareAction;
-use Ncpd\SecureShare\Filament\Schemas\SecureShareForm;
+use Jodeveloper\SecureShare\Filament\Actions\SecureShareAction;
+use Jodeveloper\SecureShare\Filament\Schemas\SecureShareForm;
 
 SecureShareAction::make()
     // Define TemplatePolicy::share() to enforce record visibility and sharing rights.

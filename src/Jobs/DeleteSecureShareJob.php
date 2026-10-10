@@ -1,14 +1,14 @@
 <?php
 
-namespace Ncpd\SecureShare\Jobs;
+namespace Jodeveloper\SecureShare\Jobs;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Ncpd\SecureShare\Enums\SecureShareStatus;
-use Ncpd\SecureShare\Models\SecureShare;
+use Jodeveloper\SecureShare\Enums\SecureShareStatus;
+use Jodeveloper\SecureShare\Models\SecureShare;
 
 final class DeleteSecureShareJob implements ShouldQueue
 {

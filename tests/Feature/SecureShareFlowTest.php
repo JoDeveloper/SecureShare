@@ -1,16 +1,16 @@
 <?php
 
-namespace Ncpd\SecureShare\Tests\Feature;
+namespace Jodeveloper\SecureShare\Tests\Feature;
 
 use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
-use Ncpd\SecureShare\Actions\CreateSecureShareAction;
-use Ncpd\SecureShare\Enums\SecureShareStatus;
-use Ncpd\SecureShare\Models\SecureShare;
-use Ncpd\SecureShare\Tests\TestCase;
+use Jodeveloper\SecureShare\Actions\CreateSecureShareAction;
+use Jodeveloper\SecureShare\Enums\SecureShareStatus;
+use Jodeveloper\SecureShare\Models\SecureShare;
+use Jodeveloper\SecureShare\Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 
 class SecureShareFlowTest extends TestCase

@@ -1,6 +1,6 @@
 <?php
 
-namespace Ncpd\SecureShare\Http\Controllers;
+namespace Jodeveloper\SecureShare\Http\Controllers;
 
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -8,11 +8,11 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\View\View;
-use Ncpd\SecureShare\Actions\UnlockSecureShareAction;
-use Ncpd\SecureShare\Enums\SecureShareStatus;
-use Ncpd\SecureShare\Exceptions\ShareUnlockException;
-use Ncpd\SecureShare\Models\SecureShare;
-use Ncpd\SecureShare\Services\SecretCipher;
+use Jodeveloper\SecureShare\Actions\UnlockSecureShareAction;
+use Jodeveloper\SecureShare\Enums\SecureShareStatus;
+use Jodeveloper\SecureShare\Exceptions\ShareUnlockException;
+use Jodeveloper\SecureShare\Models\SecureShare;
+use Jodeveloper\SecureShare\Services\SecretCipher;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Throwable;

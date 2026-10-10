@@ -1,6 +1,6 @@
 <?php
 
-namespace Ncpd\SecureShare\Tests\Feature;
+namespace Jodeveloper\SecureShare\Tests\Feature;
 
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Http\UploadedFile;
@@ -8,11 +8,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use Mockery;
-use Ncpd\SecureShare\Actions\CreateSecureShareAction;
-use Ncpd\SecureShare\Enums\SecureShareStatus;
-use Ncpd\SecureShare\Models\SecureShare;
-use Ncpd\SecureShare\Services\SecretCipher;
-use Ncpd\SecureShare\Tests\TestCase;
+use Jodeveloper\SecureShare\Actions\CreateSecureShareAction;
+use Jodeveloper\SecureShare\Enums\SecureShareStatus;
+use Jodeveloper\SecureShare\Models\SecureShare;
+use Jodeveloper\SecureShare\Services\SecretCipher;
+use Jodeveloper\SecureShare\Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 
 class SecureShareCreationValidationTest extends TestCase

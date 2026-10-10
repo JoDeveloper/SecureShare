@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Ncpd\SecureShare\Http\Controllers\SecureShareController;
+use Jodeveloper\SecureShare\Http\Controllers\SecureShareController;
 
 Route::prefix((string) config('secure-share.route.prefix', 'secure-share'))
     ->middleware((array) config('secure-share.route.middleware', ['web']))

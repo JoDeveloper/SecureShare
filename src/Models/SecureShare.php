@@ -1,12 +1,12 @@
 <?php
 
-namespace Ncpd\SecureShare\Models;
+namespace Jodeveloper\SecureShare\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Storage;
-use Ncpd\SecureShare\Enums\SecureShareStatus;
+use Jodeveloper\SecureShare\Enums\SecureShareStatus;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 

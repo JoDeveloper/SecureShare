@@ -1,15 +1,15 @@
 <?php
 
-namespace Ncpd\SecureShare\Tests\Feature;
+namespace Jodeveloper\SecureShare\Tests\Feature;
 
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
-use Ncpd\SecureShare\Actions\CreateSecureShareAction;
-use Ncpd\SecureShare\Enums\SecureShareStatus;
-use Ncpd\SecureShare\Models\SecureShare;
-use Ncpd\SecureShare\Services\SecretCipher;
-use Ncpd\SecureShare\Tests\TestCase;
+use Jodeveloper\SecureShare\Actions\CreateSecureShareAction;
+use Jodeveloper\SecureShare\Enums\SecureShareStatus;
+use Jodeveloper\SecureShare\Models\SecureShare;
+use Jodeveloper\SecureShare\Services\SecretCipher;
+use Jodeveloper\SecureShare\Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 
 class SecureShareActionsTest extends TestCase
@@ -91,7 +91,7 @@ class SecureShareActionsTest extends TestCase
     #[Test]
     public function persists_lifetime_options(): void
     {
-        $user = \Ncpd\SecureShare\Tests\Fixtures\TestUser::create([
+        $user = \Jodeveloper\SecureShare\Tests\Fixtures\TestUser::create([
             'name' => 'Creator',
             'email' => 'creator@example.com',
             'password' => 'secret-hash',

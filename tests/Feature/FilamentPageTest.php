@@ -1,13 +1,13 @@
 <?php
 
-namespace Ncpd\SecureShare\Tests\Feature;
+namespace Jodeveloper\SecureShare\Tests\Feature;
 
 use Livewire\Livewire;
-use Ncpd\SecureShare\Enums\SecureShareStatus;
-use Ncpd\SecureShare\Filament\Pages\CreateSecureShare;
-use Ncpd\SecureShare\Models\SecureShare;
-use Ncpd\SecureShare\Tests\Fixtures\TestUser;
-use Ncpd\SecureShare\Tests\TestCase;
+use Jodeveloper\SecureShare\Enums\SecureShareStatus;
+use Jodeveloper\SecureShare\Filament\Pages\CreateSecureShare;
+use Jodeveloper\SecureShare\Models\SecureShare;
+use Jodeveloper\SecureShare\Tests\Fixtures\TestUser;
+use Jodeveloper\SecureShare\Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 
 class FilamentPageTest extends TestCase
@@ -77,7 +77,7 @@ class FilamentPageTest extends TestCase
 
         $share = SecureShare::query()->sole();
 
-        $this->assertSame('made in the panel', \Ncpd\SecureShare\Services\SecretCipher::decrypt($share->ciphertext, self::PASSCODE));
+        $this->assertSame('made in the panel', \Jodeveloper\SecureShare\Services\SecretCipher::decrypt($share->ciphertext, self::PASSCODE));
         $this->assertSame($user->id, $share->created_by);
         $this->assertTrue($share->burn_after_reading);
         $this->assertSame(SecureShareStatus::Active, $share->status);

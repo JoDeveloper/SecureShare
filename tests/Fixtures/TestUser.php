@@ -1,6 +1,6 @@
 <?php
 
-namespace Ncpd\SecureShare\Tests\Fixtures;
+namespace Jodeveloper\SecureShare\Tests\Fixtures;
 
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Ncpd\SecureShare\Exceptions;
+namespace Jodeveloper\SecureShare\Exceptions;
 
 use RuntimeException;
 

@@ -1,10 +1,10 @@
 <?php
 
-namespace Ncpd\SecureShare;
+namespace Jodeveloper\SecureShare;
 
 use Filament\Contracts\Plugin;
 use Filament\Panel;
-use Ncpd\SecureShare\Filament\Pages\CreateSecureShare;
+use Jodeveloper\SecureShare\Filament\Pages\CreateSecureShare;
 
 final class SecureSharePlugin implements Plugin
 {

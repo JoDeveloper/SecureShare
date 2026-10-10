@@ -1,14 +1,14 @@
 <?php
 
-namespace Ncpd\SecureShare\Filament\Pages;
+namespace Jodeveloper\SecureShare\Filament\Pages;
 
 use Filament\Facades\Filament;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Arr;
-use Ncpd\SecureShare\Actions\CreateSecureShareAction;
-use Ncpd\SecureShare\Filament\Schemas\SecureShareForm;
+use Jodeveloper\SecureShare\Actions\CreateSecureShareAction;
+use Jodeveloper\SecureShare\Filament\Schemas\SecureShareForm;
 
 final class CreateSecureShare extends Page
 {

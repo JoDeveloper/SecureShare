@@ -1,12 +1,12 @@
 <?php
 
-namespace Ncpd\SecureShare;
+namespace Jodeveloper\SecureShare;
 
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Schedule;
-use Ncpd\SecureShare\Console\Commands\PurgeExpiredSharesCommand;
+use Jodeveloper\SecureShare\Console\Commands\PurgeExpiredSharesCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 

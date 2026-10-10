@@ -1,8 +1,8 @@
 <?php
 
-namespace Ncpd\SecureShare\Services;
+namespace Jodeveloper\SecureShare\Services;
 
-use Ncpd\SecureShare\Exceptions\DecryptionFailedException;
+use Jodeveloper\SecureShare\Exceptions\DecryptionFailedException;
 
 final class SecretCipher
 {

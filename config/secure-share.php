@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'model' => \Ncpd\SecureShare\Models\SecureShare::class,
+    'model' => \Jodeveloper\SecureShare\Models\SecureShare::class,
 
     // null = fall back to Media Library's own default disk (your OSS disk)
     'disk' => null,

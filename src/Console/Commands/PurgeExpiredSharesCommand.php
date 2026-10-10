@@ -1,11 +1,11 @@
 <?php
 
-namespace Ncpd\SecureShare\Console\Commands;
+namespace Jodeveloper\SecureShare\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Builder;
-use Ncpd\SecureShare\Enums\SecureShareStatus;
-use Ncpd\SecureShare\Models\SecureShare;
+use Jodeveloper\SecureShare\Enums\SecureShareStatus;
+use Jodeveloper\SecureShare\Models\SecureShare;
 
 final class PurgeExpiredSharesCommand extends Command
 {

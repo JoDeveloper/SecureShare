@@ -1,6 +1,6 @@
 <?php
 
-namespace Ncpd\SecureShare\Tests\Fixtures;
+namespace Jodeveloper\SecureShare\Tests\Fixtures;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;

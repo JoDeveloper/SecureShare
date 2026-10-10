@@ -1,6 +1,6 @@
 <?php
 
-namespace Ncpd\SecureShare\Filament\Actions;
+namespace Jodeveloper\SecureShare\Filament\Actions;
 
 use Closure;
 use Filament\Actions\Action;
@@ -9,8 +9,8 @@ use Filament\Notifications\Notification;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Arr;
-use Ncpd\SecureShare\Actions\CreateSecureShareAction;
-use Ncpd\SecureShare\Filament\Schemas\SecureShareForm;
+use Jodeveloper\SecureShare\Actions\CreateSecureShareAction;
+use Jodeveloper\SecureShare\Filament\Schemas\SecureShareForm;
 
 final class SecureShareAction extends Action
 {

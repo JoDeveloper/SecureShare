@@ -1,6 +1,6 @@
 <?php
 
-namespace Ncpd\SecureShare\Tests;
+namespace Jodeveloper\SecureShare\Tests;
 
 use BladeUI\Heroicons\BladeHeroiconsServiceProvider;
 use BladeUI\Icons\BladeIconsServiceProvider;
@@ -16,9 +16,9 @@ use Filament\Tables\TablesServiceProvider;
 use Filament\Widgets\WidgetsServiceProvider;
 use Kirschbaum\PowerJoins\PowerJoinsServiceProvider;
 use Livewire\LivewireServiceProvider;
-use Ncpd\SecureShare\SecureShareServiceProvider;
-use Ncpd\SecureShare\Tests\Fixtures\AdminPanelProvider;
-use Ncpd\SecureShare\Tests\Fixtures\TestUser;
+use Jodeveloper\SecureShare\SecureShareServiceProvider;
+use Jodeveloper\SecureShare\Tests\Fixtures\AdminPanelProvider;
+use Jodeveloper\SecureShare\Tests\Fixtures\TestUser;
 use Orchestra\Testbench\TestCase as BaseTestCase;
 use RyanChandler\BladeCaptureDirective\BladeCaptureDirectiveServiceProvider;
 use Spatie\MediaLibrary\MediaLibraryServiceProvider;

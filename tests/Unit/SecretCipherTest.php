@@ -1,9 +1,9 @@
 <?php
 
-namespace Ncpd\SecureShare\Tests\Unit;
+namespace Jodeveloper\SecureShare\Tests\Unit;
 
-use Ncpd\SecureShare\Exceptions\DecryptionFailedException;
-use Ncpd\SecureShare\Services\SecretCipher;
+use Jodeveloper\SecureShare\Exceptions\DecryptionFailedException;
+use Jodeveloper\SecureShare\Services\SecretCipher;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

@@ -1,12 +1,12 @@
 <?php
 
-namespace Ncpd\SecureShare\Tests\Fixtures;
+namespace Jodeveloper\SecureShare\Tests\Fixtures;
 
 use Filament\Forms\Components\TextInput;
 use Filament\Pages\Page;
 use Illuminate\Http\UploadedFile;
-use Ncpd\SecureShare\Filament\Actions\SecureShareAction;
-use Ncpd\SecureShare\Filament\Schemas\SecureShareForm;
+use Jodeveloper\SecureShare\Filament\Actions\SecureShareAction;
+use Jodeveloper\SecureShare\Filament\Schemas\SecureShareForm;
 
 class SecureShareActionPage extends Page
 {

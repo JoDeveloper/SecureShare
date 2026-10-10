@@ -1,13 +1,13 @@
 <?php
 
-namespace Ncpd\SecureShare\Actions;
+namespace Jodeveloper\SecureShare\Actions;
 
-use Ncpd\SecureShare\Enums\SecureShareStatus;
-use Ncpd\SecureShare\Exceptions\DecryptionFailedException;
-use Ncpd\SecureShare\Exceptions\ShareUnlockException;
-use Ncpd\SecureShare\Jobs\DeleteSecureShareJob;
-use Ncpd\SecureShare\Models\SecureShare;
-use Ncpd\SecureShare\Services\SecretCipher;
+use Jodeveloper\SecureShare\Enums\SecureShareStatus;
+use Jodeveloper\SecureShare\Exceptions\DecryptionFailedException;
+use Jodeveloper\SecureShare\Exceptions\ShareUnlockException;
+use Jodeveloper\SecureShare\Jobs\DeleteSecureShareJob;
+use Jodeveloper\SecureShare\Models\SecureShare;
+use Jodeveloper\SecureShare\Services\SecretCipher;
 
 final class UnlockSecureShareAction
 {

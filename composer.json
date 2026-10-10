@@ -1,5 +1,5 @@
 {
-    "name": "ncpd/secure-share",
+    "name": "jodeveloper/secure-share",
     "description": "Passcode-encrypted secret + attachment sharing for Laravel/Filament",
     "license": "MIT",
     "require": {
@@ -16,18 +16,18 @@
     },
     "autoload": {
         "psr-4": {
-            "Ncpd\\SecureShare\\": "src/"
+            "Jodeveloper\\SecureShare\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Ncpd\\SecureShare\\Tests\\": "tests/"
+            "Jodeveloper\\SecureShare\\Tests\\": "tests/"
         }
     },
     "extra": {
         "laravel": {
             "providers": [
-                "Ncpd\\SecureShare\\SecureShareServiceProvider"
+                "Jodeveloper\\SecureShare\\SecureShareServiceProvider"
             ]
         }
     },

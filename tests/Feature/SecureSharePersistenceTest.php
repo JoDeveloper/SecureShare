@@ -1,6 +1,6 @@
 <?php
 
-namespace Ncpd\SecureShare\Tests\Feature;
+namespace Jodeveloper\SecureShare\Tests\Feature;
 
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Filesystem\FilesystemAdapter;
@@ -9,12 +9,12 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Mockery;
-use Ncpd\SecureShare\Actions\CreateSecureShareAction;
-use Ncpd\SecureShare\Enums\SecureShareStatus;
-use Ncpd\SecureShare\Models\SecureShare;
-use Ncpd\SecureShare\Tests\Fixtures\CustomSecureShare;
-use Ncpd\SecureShare\Tests\Fixtures\SoftDeletingMedia;
-use Ncpd\SecureShare\Tests\TestCase;
+use Jodeveloper\SecureShare\Actions\CreateSecureShareAction;
+use Jodeveloper\SecureShare\Enums\SecureShareStatus;
+use Jodeveloper\SecureShare\Models\SecureShare;
+use Jodeveloper\SecureShare\Tests\Fixtures\CustomSecureShare;
+use Jodeveloper\SecureShare\Tests\Fixtures\SoftDeletingMedia;
+use Jodeveloper\SecureShare\Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
@@ -162,7 +162,7 @@ class SecureSharePersistenceTest extends TestCase
         );
 
         $this->assertContains(
-            'Ncpd\\SecureShare\\SecureShareServiceProvider',
+            'Jodeveloper\\SecureShare\\SecureShareServiceProvider',
             $composer['extra']['laravel']['providers'] ?? []
         );
     }

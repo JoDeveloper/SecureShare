@@ -1,8 +1,8 @@
 <?php
 
-namespace Ncpd\SecureShare\Tests\Feature;
+namespace Jodeveloper\SecureShare\Tests\Feature;
 
-use Ncpd\SecureShare\Tests\TestCase;
+use Jodeveloper\SecureShare\Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 
 class PackageBootsTest extends TestCase
@@ -22,7 +22,7 @@ class PackageBootsTest extends TestCase
     public function model_config_points_at_the_package_model(): void
     {
         $this->assertSame(
-            \Ncpd\SecureShare\Models\SecureShare::class,
+            \Jodeveloper\SecureShare\Models\SecureShare::class,
             config('secure-share.model')
         );
     }

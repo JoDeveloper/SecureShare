@@ -1,17 +1,17 @@
 <?php
 
-namespace Ncpd\SecureShare\Tests\Feature;
+namespace Jodeveloper\SecureShare\Tests\Feature;
 
 use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
-use Ncpd\SecureShare\Actions\CreateSecureShareAction;
-use Ncpd\SecureShare\Actions\UnlockSecureShareAction;
-use Ncpd\SecureShare\Enums\SecureShareStatus;
-use Ncpd\SecureShare\Exceptions\ShareUnlockException;
-use Ncpd\SecureShare\Jobs\DeleteSecureShareJob;
-use Ncpd\SecureShare\Models\SecureShare;
-use Ncpd\SecureShare\Tests\TestCase;
+use Jodeveloper\SecureShare\Actions\CreateSecureShareAction;
+use Jodeveloper\SecureShare\Actions\UnlockSecureShareAction;
+use Jodeveloper\SecureShare\Enums\SecureShareStatus;
+use Jodeveloper\SecureShare\Exceptions\ShareUnlockException;
+use Jodeveloper\SecureShare\Jobs\DeleteSecureShareJob;
+use Jodeveloper\SecureShare\Models\SecureShare;
+use Jodeveloper\SecureShare\Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 
 class SecureShareUnlockTest extends TestCase
